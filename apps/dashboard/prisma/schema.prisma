@@ -1,0 +1,9 @@
+// Prisma schema placeholder; define models to mirror docs/db_schema.sql as needed
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
