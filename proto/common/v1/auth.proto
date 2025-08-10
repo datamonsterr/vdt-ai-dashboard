@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package vdt.ai.common.v1;
+
+option go_package = "github.com/vdt-ai/monorepo/proto/common/v1";
+
+// Authentication request containing user credentials.
+message AuthRequest {
+  string email = 1;
+  string password = 2;
+  string organization_id = 3;
+}
+
+// Authentication response returned by Clerk.
+message AuthResponse {
+  string user_id = 1;
+  string organization_id = 2;
+  string session_token = 3;
+}
