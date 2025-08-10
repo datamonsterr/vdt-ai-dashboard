@@ -86,6 +86,8 @@
 - [ ] Configure authentication with Clerk
 - [ ] Set up API client for kafka-consumer communication
 - [ ] Add routing and layout structure
+- [x] Prisma schema and demo seed script
+- [x] Basic tRPC backend with project endpoints
 
 ### Authentication & User Management
 - [ ] Implement Clerk authentication flow

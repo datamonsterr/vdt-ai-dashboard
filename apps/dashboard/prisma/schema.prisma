@@ -1,9 +1,46 @@
-// Prisma schema placeholder; define models to mirror docs/db_schema.sql as needed
+// Prisma schema aligned with docs/db_schema.sql for dashboard
+
 generator client {
   provider = "prisma-client-js"
+}
+
+generator fakeData {
+  provider = "prisma-generator-fake-data"
+  output   = "./fake-data.ts"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Organization {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+  projects  Project[]
+}
+
+model Project {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String       @map("organization_id")
+  name           String
+  slug           String
+  description    String?
+  createdBy      String?      @map("created_by")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @default(now()) @map("updated_at")
+  @@unique([organizationId, slug])
+}
+
+model User {
+  id          String   @id @default(uuid())
+  clerkUserId String   @unique @map("clerk_user_id")
+  email       String
+  displayName String?  @map("display_name")
+  createdAt   DateTime @default(now()) @map("created_at")
+}
+
