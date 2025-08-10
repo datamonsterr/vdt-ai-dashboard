@@ -2,12 +2,12 @@
   "name": "@vdt-ai/proto-types",
   "version": "1.0.0",
   "description": "Shared protobuf types for VDT AI monorepo",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "clean": "rm -rf dist",
+    "build": "echo 'no build'",
+    "dev": "echo 'no dev'",
+    "clean": "rm -f index.js index.d.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -18,7 +18,8 @@
     "typescript": "^5.0.0"
   },
   "files": [
-    "dist/**/*"
+    "index.d.ts",
+    "index.js"
   ],
   "publishConfig": {
     "access": "restricted"
