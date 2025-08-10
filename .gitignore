@@ -1,0 +1,61 @@
+node_modules/
+.next/
+dist/
+build/
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Generated files
+packages/proto-types/src/
+apps/consumer/internal/proto/
+libs/python-lib/src/vdt_ai/proto/
+
+# Dependencies
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go/bin
+go/pkg
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+.docker/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+.tmp/
+temp/
+
+.venv

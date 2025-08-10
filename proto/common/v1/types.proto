@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package vdt.ai.common.v1;
+
+option go_package = "github.com/vdt-ai/monorepo/proto/common/v1";
+
+import "google/protobuf/timestamp.proto";
+
+// Common data types used across services
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  UserRole role = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_ADMIN = 1;
+  USER_ROLE_USER = 2;
+  USER_ROLE_VIEWER = 3;
+}
+
+message Event {
+  string id = 1;
+  string user_id = 2;
+  EventType type = 3;
+  string data = 4; // JSON payload
+  google.protobuf.Timestamp timestamp = 5;
+  map<string, string> metadata = 6;
+}
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_USER_CREATED = 1;
+  EVENT_TYPE_USER_UPDATED = 2;
+  EVENT_TYPE_USER_DELETED = 3;
+  EVENT_TYPE_DATA_PROCESSED = 4;
+  EVENT_TYPE_MODEL_TRAINED = 5;
+}
+
+message DataRecord {
+  string id = 1;
+  string user_id = 2;
+  DataType type = 3;
+  bytes content = 4;
+  map<string, string> features = 5;
+  google.protobuf.Timestamp created_at = 6;
+  ProcessingStatus status = 7;
+}
+
+enum DataType {
+  DATA_TYPE_UNSPECIFIED = 0;
+  DATA_TYPE_TEXT = 1;
+  DATA_TYPE_IMAGE = 2;
+  DATA_TYPE_AUDIO = 3;
+  DATA_TYPE_VIDEO = 4;
+}
+
+enum ProcessingStatus {
+  PROCESSING_STATUS_UNSPECIFIED = 0;
+  PROCESSING_STATUS_PENDING = 1;
+  PROCESSING_STATUS_PROCESSING = 2;
+  PROCESSING_STATUS_COMPLETED = 3;
+  PROCESSING_STATUS_FAILED = 4;
+}
+
+message AIModel {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  ModelType type = 4;
+  map<string, string> config = 5;
+  google.protobuf.Timestamp created_at = 6;
+  ModelStatus status = 7;
+}
+
+enum ModelType {
+  MODEL_TYPE_UNSPECIFIED = 0;
+  MODEL_TYPE_CLASSIFICATION = 1;
+  MODEL_TYPE_REGRESSION = 2;
+  MODEL_TYPE_CLUSTERING = 3;
+  MODEL_TYPE_RECOMMENDATION = 4;
+}
+
+enum ModelStatus {
+  MODEL_STATUS_UNSPECIFIED = 0;
+  MODEL_STATUS_TRAINING = 1;
+  MODEL_STATUS_READY = 2;
+  MODEL_STATUS_DEPRECATED = 3;
+}

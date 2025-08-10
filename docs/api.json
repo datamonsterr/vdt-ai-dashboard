@@ -1,0 +1,376 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "VDT AI API",
+		"version": "0.1.0",
+		"description": "API for event ingestion, metrics, alerting, and project management."
+	},
+	"servers": [
+		{ "url": "http://localhost:8080" }
+	],
+	"tags": [
+		{ "name": "auth" },
+		{ "name": "projects" },
+		{ "name": "pipelines" },
+		{ "name": "events" },
+		{ "name": "metrics" },
+		{ "name": "alerts" }
+	],
+	"paths": {
+		"/health": {
+			"get": {
+				"tags": ["auth"],
+				"summary": "Health check",
+				"responses": {
+					"200": { "description": "OK" }
+				}
+			}
+		},
+		"/v1/auth/whoami": {
+			"get": {
+				"tags": ["auth"],
+				"summary": "Return current user and org context",
+				"security": [{ "ApiKeyAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Authenticated identity",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/WhoAmI" }
+							}
+						}
+					},
+					"401": { "description": "Unauthorized" }
+				}
+			}
+		},
+
+		"/v1/projects": {
+			"get": {
+				"tags": ["projects"],
+				"summary": "List projects",
+				"security": [{ "ApiKeyAuth": [] }],
+				"parameters": [
+					{ "$ref": "#/components/parameters/page" },
+					{ "$ref": "#/components/parameters/pageSize" }
+				],
+				"responses": {
+					"200": {
+						"description": "List of projects",
+						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedProjects" } } }
+					}
+				}
+			},
+			"post": {
+				"tags": ["projects"],
+				"summary": "Create project",
+				"security": [{ "ApiKeyAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProjectCreate" } } }
+				},
+				"responses": {
+					"201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Project" } } } }
+				}
+			}
+		},
+		"/v1/projects/{projectId}": {
+			"parameters": [{ "$ref": "#/components/parameters/projectId" }],
+			"get": {
+				"tags": ["projects"],
+				"summary": "Get project",
+				"security": [{ "ApiKeyAuth": [] }],
+				"responses": {
+					"200": { "description": "Project", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Project" } } } },
+					"404": { "description": "Not found" }
+				}
+			},
+			"patch": {
+				"tags": ["projects"],
+				"summary": "Update project",
+				"security": [{ "ApiKeyAuth": [] }],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProjectUpdate" } } } },
+				"responses": { "200": { "description": "Updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Project" } } } } }
+			},
+			"delete": {
+				"tags": ["projects"],
+				"summary": "Delete project",
+				"security": [{ "ApiKeyAuth": [] }],
+				"responses": { "204": { "description": "Deleted" } }
+			}
+		},
+
+		"/v1/pipelines": {
+			"get": {
+				"tags": ["pipelines"],
+				"summary": "List pipelines",
+				"security": [{ "ApiKeyAuth": [] }],
+				"parameters": [ { "$ref": "#/components/parameters/projectIdQuery" } ],
+				"responses": { "200": { "description": "Pipelines", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PipelineList" } } } } }
+			},
+			"post": {
+				"tags": ["pipelines"],
+				"summary": "Create pipeline",
+				"security": [{ "ApiKeyAuth": [] }],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PipelineCreate" } } } },
+				"responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pipeline" } } } } }
+			}
+		},
+
+		"/v1/events": {
+			"post": {
+				"tags": ["events"],
+				"summary": "Ingest processed event",
+				"security": [{ "ApiKeyAuth": [] }],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EventIngest" } } } },
+				"responses": { "202": { "description": "Accepted" } }
+			},
+			"get": {
+				"tags": ["events"],
+				"summary": "Query events",
+				"security": [{ "ApiKeyAuth": [] }],
+				"parameters": [
+					{ "$ref": "#/components/parameters/projectIdQuery" },
+					{ "$ref": "#/components/parameters/fromTs" },
+					{ "$ref": "#/components/parameters/toTs" },
+					{ "$ref": "#/components/parameters/page" },
+					{ "$ref": "#/components/parameters/pageSize" }
+				],
+				"responses": { "200": { "description": "Events", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedEvents" } } } } }
+			}
+		},
+
+		"/v1/metrics": {
+			"post": {
+				"tags": ["metrics"],
+				"summary": "Ingest metric point",
+				"security": [{ "ApiKeyAuth": [] }],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MetricIngest" } } } },
+				"responses": { "202": { "description": "Accepted" } }
+			},
+			"get": {
+				"tags": ["metrics"],
+				"summary": "Query metrics",
+				"security": [{ "ApiKeyAuth": [] }],
+				"parameters": [
+					{ "$ref": "#/components/parameters/projectIdQuery" },
+					{ "name": "metric", "in": "query", "schema": { "type": "string" }, "required": true },
+					{ "$ref": "#/components/parameters/fromTs" },
+					{ "$ref": "#/components/parameters/toTs" },
+					{ "name": "groupBy", "in": "query", "schema": { "type": "string", "enum": ["minute","hour","day"] }, "required": false }
+				],
+				"responses": { "200": { "description": "Metric series", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MetricSeries" } } } } }
+			}
+		},
+
+		"/v1/alerts/rules": {
+			"get": {
+				"tags": ["alerts"],
+				"summary": "List alert rules",
+				"security": [{ "ApiKeyAuth": [] }],
+				"parameters": [ { "$ref": "#/components/parameters/projectIdQuery" } ],
+				"responses": { "200": { "description": "Rules", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AlertRuleList" } } } } }
+			},
+			"post": {
+				"tags": ["alerts"],
+				"summary": "Create alert rule",
+				"security": [{ "ApiKeyAuth": [] }],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AlertRuleCreate" } } } },
+				"responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AlertRule" } } } } }
+			}
+		},
+
+		"/v1/alerts": {
+			"get": {
+				"tags": ["alerts"],
+				"summary": "List alerts",
+				"security": [{ "ApiKeyAuth": [] }],
+				"parameters": [
+					{ "$ref": "#/components/parameters/projectIdQuery" },
+					{ "$ref": "#/components/parameters/page" },
+					{ "$ref": "#/components/parameters/pageSize" }
+				],
+				"responses": { "200": { "description": "Alerts", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedAlerts" } } } } }
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"ApiKeyAuth": {
+				"type": "apiKey",
+				"name": "x-api-key",
+				"in": "header"
+			}
+		},
+		"parameters": {
+			"page": { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1 }, "required": false },
+			"pageSize": { "name": "pageSize", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 200 }, "required": false },
+			"projectId": { "name": "projectId", "in": "path", "schema": { "type": "string", "format": "uuid" }, "required": true },
+			"projectIdQuery": { "name": "projectId", "in": "query", "schema": { "type": "string", "format": "uuid" }, "required": true },
+			"fromTs": { "name": "from", "in": "query", "schema": { "type": "string", "format": "date-time" }, "required": false },
+			"toTs": { "name": "to", "in": "query", "schema": { "type": "string", "format": "date-time" }, "required": false }
+		},
+		"schemas": {
+			"WhoAmI": {
+				"type": "object",
+				"properties": {
+					"userId": { "type": "string" },
+					"organizationId": { "type": "string" },
+					"projects": { "type": "array", "items": { "$ref": "#/components/schemas/Project" } }
+				}
+			},
+			"Project": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string", "format": "uuid" },
+					"organizationId": { "type": "string", "format": "uuid" },
+					"name": { "type": "string" },
+					"slug": { "type": "string" },
+					"createdAt": { "type": "string", "format": "date-time" }
+				},
+				"required": ["id","organizationId","name","slug","createdAt"]
+			},
+			"ProjectCreate": {
+				"type": "object",
+				"properties": {
+					"organizationId": { "type": "string", "format": "uuid" },
+					"name": { "type": "string" },
+					"slug": { "type": "string" },
+					"description": { "type": "string" }
+				},
+				"required": ["organizationId","name","slug"]
+			},
+			"ProjectUpdate": {
+				"type": "object",
+				"properties": {
+					"name": { "type": "string" },
+					"slug": { "type": "string" },
+					"description": { "type": "string" }
+				}
+			},
+			"PaginatedProjects": {
+				"type": "object",
+				"properties": {
+					"items": { "type": "array", "items": { "$ref": "#/components/schemas/Project" } },
+					"page": { "type": "integer" },
+					"pageSize": { "type": "integer" },
+					"total": { "type": "integer" }
+				}
+			},
+			"Pipeline": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string", "format": "uuid" },
+					"projectId": { "type": "string", "format": "uuid" },
+					"name": { "type": "string" }
+				},
+				"required": ["id","projectId","name"]
+			},
+			"PipelineCreate": {
+				"type": "object",
+				"properties": {
+					"projectId": { "type": "string", "format": "uuid" },
+					"name": { "type": "string" },
+					"description": { "type": "string" }
+				},
+				"required": ["projectId","name"]
+			},
+			"PipelineList": {
+				"type": "object",
+				"properties": {
+					"items": { "type": "array", "items": { "$ref": "#/components/schemas/Pipeline" } }
+				}
+			},
+			"EventIngest": {
+				"type": "object",
+				"properties": {
+					"organizationId": { "type": "string", "format": "uuid" },
+					"projectId": { "type": "string", "format": "uuid" },
+					"pipelineId": { "type": "string", "format": "uuid" },
+					"stageId": { "type": "string", "format": "uuid" },
+					"eventType": { "type": "string", "enum": ["info","metric","error","warning","audit"] },
+					"name": { "type": "string" },
+					"message": { "type": "string" },
+					"attributes": { "type": "object", "additionalProperties": true },
+					"statusCode": { "type": "integer" },
+					"traceId": { "type": "string" },
+					"spanId": { "type": "string" },
+					"latencyMs": { "type": "integer" },
+					"occurredAt": { "type": "string", "format": "date-time" }
+				},
+				"required": ["organizationId","projectId","eventType","name","occurredAt"]
+			},
+			"Event": {
+				"allOf": [
+					{ "$ref": "#/components/schemas/EventIngest" },
+					{ "type": "object", "properties": { "id": { "type": "string", "format": "uuid" }, "ingestedAt": { "type": "string", "format": "date-time" } } }
+				]
+			},
+			"PaginatedEvents": {
+				"type": "object",
+				"properties": {
+					"items": { "type": "array", "items": { "$ref": "#/components/schemas/Event" } },
+					"page": { "type": "integer" },
+					"pageSize": { "type": "integer" },
+					"total": { "type": "integer" }
+				}
+			},
+			"MetricIngest": {
+				"type": "object",
+				"properties": {
+					"organizationId": { "type": "string", "format": "uuid" },
+					"projectId": { "type": "string", "format": "uuid" },
+					"pipelineId": { "type": "string", "format": "uuid" },
+					"stageId": { "type": "string", "format": "uuid" },
+					"metric": { "type": "string" },
+					"value": { "type": "number" },
+					"labels": { "type": "object", "additionalProperties": { "type": ["string","number","boolean"] } },
+					"unit": { "type": "string" },
+					"ts": { "type": "string", "format": "date-time" }
+				},
+				"required": ["organizationId","projectId","metric","value","ts"]
+			},
+			"MetricSeries": {
+				"type": "object",
+				"properties": {
+					"metric": { "type": "string" },
+					"points": {
+						"type": "array",
+						"items": { "type": "object", "properties": { "ts": { "type": "string", "format": "date-time" }, "value": { "type": "number" } } }
+					}
+				}
+			},
+			"AlertRule": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string", "format": "uuid" },
+					"projectId": { "type": "string", "format": "uuid" },
+					"name": { "type": "string" },
+					"isActive": { "type": "boolean" },
+					"rule": { "type": "object", "additionalProperties": true },
+					"createdAt": { "type": "string", "format": "date-time" }
+				}
+			},
+			"AlertRuleCreate": {
+				"type": "object",
+				"properties": {
+					"projectId": { "type": "string", "format": "uuid" },
+					"name": { "type": "string" },
+					"rule": { "type": "object", "additionalProperties": true }
+				},
+				"required": ["projectId","name","rule"]
+			},
+			"AlertRuleList": { "type": "object", "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/AlertRule" } } } },
+			"PaginatedAlerts": {
+				"type": "object",
+				"properties": {
+					"items": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "string", "format": "uuid" }, "status": { "type": "string" }, "summary": { "type": "string" }, "triggeredAt": { "type": "string", "format": "date-time" } } } },
+					"page": { "type": "integer" },
+					"pageSize": { "type": "integer" },
+					"total": { "type": "integer" }
+				}
+			}
+		}
+	}
+}
+
