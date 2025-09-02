@@ -1,0 +1,15 @@
+sequenceDiagram
+    actor AIS as AI Service
+    participant APIServer as api_server_controllers.EventController
+    participant AuthService as api_server_services.AuthService
+    participant ProducerService as api_server_services.EventProducerService
+    participant Kafka
+
+    AIS->>+APIServer: POST /events/{type} (Payload, API-Key)
+    APIServer->>AuthService: validateKey(API-Key)
+    AuthService-->>APIServer: returns {isValid: true}
+    
+    APIServer->>ProducerService: publishEvent(eventPayload)
+    ProducerService->>Kafka: publish(message)
+    
+    APIServer-->>-AIS: 202 Accepted

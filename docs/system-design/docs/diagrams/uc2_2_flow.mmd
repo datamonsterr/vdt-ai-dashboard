@@ -1,0 +1,17 @@
+graph TD
+    Kafka[(Kafka Topic)]
+    DB[(SQL Database)]
+    Notifier[Notification System]
+
+    subgraph kafka_consumer
+        Processor[Event Processor]
+        Aggregator[Data Aggregator]
+        Evaluator[Alert Evaluator]
+    end
+
+    Kafka -- "Delivers Event Message" --> Processor
+    Processor -- "Processes event" --> Aggregator
+    Aggregator -- "Writes aggregated data" --> DB
+    Processor -- "Evaluates event for alerts" --> Evaluator
+    Evaluator -- "Reads active alert rules" --> DB
+    Evaluator -- "If alert is triggered" --> Notifier

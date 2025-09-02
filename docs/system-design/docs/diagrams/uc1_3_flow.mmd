@@ -1,0 +1,22 @@
+graph TD
+    Actor[Engineer]
+    DB[(SQL Database)]
+
+    subgraph api_server
+        AlertController[Alert Rule Controller]
+        AlertService[Alert Rule Service]
+        AlertRepo[Repository Layer]
+    end
+
+    Dashboard[UI Dashboard]
+
+    Actor -- "Defines new alert rule in UI" --> Dashboard
+    Dashboard -- "Sends POST Request" --> AlertController
+    AlertController -- "Calls service to create proposal" --> AlertService
+    AlertService -- "Uses repository to create rule" --> AlertRepo
+    AlertRepo -- "Writes new rule with PROPOSED status" --> DB
+    DB -- "Confirms write" --> AlertRepo
+    AlertRepo -- "Returns success" --> AlertService
+    AlertService -- "Returns new rule DTO" --> AlertController
+    AlertController -- "Sends 201 Created Response" --> Dashboard
+    Dashboard -- "Proposal Submitted" --> Actor

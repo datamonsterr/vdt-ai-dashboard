@@ -1,0 +1,20 @@
+sequenceDiagram
+    actor ENG as Engineer
+    participant UI as Dashboard
+    participant AlertController as api_server_controllers.AlertController
+    participant AlertService as api_server_services.AlertService
+    participant AlertRepo as SQL Database
+    participant AuditService as api_server_services.AuditService
+
+    ENG->>+UI: Submits 'Propose Alert Rule' form
+    UI->>+AlertController: POST /api/alerts/propose (ruleData)
+
+    AlertController->>AlertService: proposeRule(ruleData, user)
+    AlertService->>AlertRepo: create(AlertRule with status=PROPOSED)
+    AlertRepo-->>AlertService: returns newRule
+    AlertService->>AuditService: logAction(user, 'PROPOSE_ALERT_RULE', newRuleId)
+    AuditService-->>AlertService: ack
+    AlertService-->>AlertController: returns newRule DTO
+
+    AlertController-->>-UI: 201 Created
+    UI-->>-ENG: Displays "Proposal Submitted for Review"

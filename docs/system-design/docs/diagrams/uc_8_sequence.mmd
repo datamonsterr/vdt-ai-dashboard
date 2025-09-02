@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor User
+    participant UI as Dashboard
+    participant ReportController as api_server_controllers.ReportController
+    participant ReportService as api_server_services.ReportService
+    participant MetricsRepo as SQL Database
+
+    User->>+UI: Clicks 'Export as CSV'
+    UI->>+ReportController: GET /api/export/{id}?format=csv
+    
+    ReportController->>ReportService: generateReport(filters)
+    ReportService->>MetricsRepo: findMetrics(filters)
+    MetricsRepo-->>ReportService: returns rawData
+    ReportService->>ReportService: formatDataAsCsv(rawData)
+    ReportService-->>ReportController: returns csvFileContent
+    
+    ReportController-->>-UI: 200 OK (Content-Type: text/csv)
+    UI-->>-User: Browser prompts file download

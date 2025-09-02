@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor User as Admin/Reviewer
+    participant UI as Dashboard
+    participant AuditController as api_server_controllers.AuditController
+    participant AuditService as api_server_services.AuditService
+    participant AuditRepo as SQL Database
+
+    User->>+UI: Navigates to Audit Log page
+    UI->>+AuditController: GET /api/auditlog
+    
+    AuditController->>AuditService: getLogs(defaultFilters)
+    AuditService->>AuditRepo: find(filters)
+    AuditRepo-->>AuditService: returns List<AuditLogEntry>
+    AuditService-->>AuditController: returns logs
+    
+    AuditController-->>-UI: 200 OK (JSON)
+    UI-->>-User: Displays logs

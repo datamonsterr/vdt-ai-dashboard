@@ -1,0 +1,22 @@
+graph TD
+    Actor[Admin/Reviewer]
+    DB[(SQL Database)]
+
+    subgraph api_server
+        AuditController[Audit Log Controller]
+        AuditService[Audit Log Service]
+        AuditRepo[Repository Layer]
+    end
+
+    Dashboard[UI Dashboard]
+
+    Actor -- "Navigates to Audit Log page" --> Dashboard
+    Dashboard -- "Sends GET Request" --> AuditController
+    AuditController -- "Calls service to fetch logs" --> AuditService
+    AuditService -- "Uses repository to query logs" --> AuditRepo
+    AuditRepo -- "SELECTs from audit_logs table" --> DB
+    DB -- "Returns log entries" --> AuditRepo
+    AuditRepo -- "Returns logs" --> AuditService
+    AuditService -- "Returns paginated list" --> AuditController
+    AuditController -- "Sends 200 OK Response" --> Dashboard
+    Dashboard -- "Displays logs in a table" --> Actor

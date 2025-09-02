@@ -1,0 +1,16 @@
+graph TD
+    Actor[AI Service]
+    Kafka[(Kafka Topic)]
+
+    subgraph api_server
+        Controller[Event Controller]
+        AuthSvc[Auth Service]
+        ProducerSvc[Event Producer Service]
+    end
+
+    Actor -- "POST /events with API Key & Payload" --> Controller
+    Controller -- "Validates key" --> AuthSvc
+    Controller -- "Validates payload" --> Controller
+    Controller -- "Publishes event" --> ProducerSvc
+    ProducerSvc -- "Sends message" --> Kafka
+    Controller -- "Returns 202 Accepted" --> Actor

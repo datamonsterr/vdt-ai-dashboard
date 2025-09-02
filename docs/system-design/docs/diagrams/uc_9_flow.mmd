@@ -1,0 +1,22 @@
+graph TD
+    Actor[Org Admin]
+    DB[(SQL Database)]
+    EmailSys[Email System]
+
+    subgraph api_server
+        InviteController[Invitation Controller]
+        InviteService[Invitation Service]
+        NotificationService[Notification Service]
+    end
+
+    Dashboard[UI Dashboard]
+
+    Actor -- "Enters email and role" --> Dashboard
+    Dashboard -- "Sends POST Request" --> InviteController
+    InviteController -- "Calls service to create invite" --> InviteService
+    InviteService -- "Writes new invitation to DB" --> DB
+    InviteService -- "Triggers notification" --> NotificationService
+    NotificationService -- "Sends invitation email" --> EmailSys
+    InviteService -- "Returns success" --> InviteController
+    InviteController -- "Sends 201 Created" --> Dashboard
+    Dashboard -- "Displays Invitation Sent" --> Actor

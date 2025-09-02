@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor OA as OrganizationAdmin
+    participant UI as Dashboard
+    participant InviteController as api_server_controllers.InviteController
+    participant InviteService as api_server_services.InviteService
+    participant InviteRepo as SQL Database
+    participant NotificationService as api_server_services.NotificationService
+
+    OA->>+UI: Submits 'Invite User' form (email, role)
+    UI->>+InviteController: POST /api/invitations
+    
+    InviteController->>InviteService: createInvitation(email, role)
+    InviteService->>InviteService: Generate unique token
+    InviteService->>InviteRepo: save(invitation with token)
+    InviteRepo-->>InviteService: ack
+    InviteService->>NotificationService: sendInvitationEmail(email, token)
+    NotificationService-->>InviteService: ack
+    InviteService-->>InviteController: returns success
+    
+    InviteController-->>-UI: 201 Created
+    UI-->>-OA: Displays "Invitation Sent"

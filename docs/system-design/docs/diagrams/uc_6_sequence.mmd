@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor User
+    participant UI as Dashboard
+    participant DashboardController as api_server_controllers.DashboardController
+    participant DashboardService as api_server_services.DashboardService
+    participant MetricsRepo as SQL Database
+
+    User->>+UI: Selects time range and model version filters
+    UI->>+DashboardController: GET /api/dashboard/{id}?range=7d&version=1.2
+    
+    DashboardController->>DashboardService: getDashboardData(filters)
+    DashboardService->>MetricsRepo: findMetrics(query based on filters)
+    MetricsRepo-->>DashboardService: returns aggregatedData
+    DashboardService-->>DashboardController: returns formattedChartData
+    
+    DashboardController-->>-UI: 200 OK (JSON)
+    UI-->>-User: Displays updated charts

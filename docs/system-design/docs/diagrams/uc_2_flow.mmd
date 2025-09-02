@@ -1,0 +1,22 @@
+graph TD
+    Admin[Organization Admin]
+    DB[(SQL Database)]
+
+    subgraph api_server
+        AccessController[Access Controller]
+        ProjectService[Project Service]
+        MemberRepo[Repository Layer]
+    end
+
+    Dashboard[UI Dashboard]
+
+    Admin -- "Selects user and role in UI" --> Dashboard
+    Dashboard -- "Sends POST Request" --> AccessController
+    AccessController -- "Calls service with details" --> ProjectService
+    ProjectService -- "Uses repository to create permission" --> MemberRepo
+    MemberRepo -- "Writes new ProjectMember entry" --> DB
+    DB -- "Confirms write" --> MemberRepo
+    MemberRepo -- "Returns success" --> ProjectService
+    ProjectService -- "Returns success" --> AccessController
+    AccessController -- "Sends 201 Created Response" --> Dashboard
+    Dashboard -- "Refreshes member list in UI" --> Admin

@@ -1,0 +1,22 @@
+graph TD
+    Actor[User]
+    DB[(SQL Database)]
+
+    subgraph api_server
+        ReportController[Report Controller]
+        ReportService[Report Service]
+        MetricsRepo[Repository Layer]
+    end
+
+    Dashboard[UI Dashboard]
+
+    Actor -- "Clicks Export as CSV" --> Dashboard
+    Dashboard -- "Sends GET Request" --> ReportController
+    ReportController -- "Calls service to generate file" --> ReportService
+    ReportService -- "Fetches data for report" --> MetricsRepo
+    MetricsRepo -- "SELECTs from aggregated_metrics" --> DB
+    DB -- "Returns raw data" --> MetricsRepo
+    ReportService -- "Generates CSV file in memory" --> ReportService
+    ReportService -- "Returns file content" --> ReportController
+    ReportController -- "Sends 200 OK with file" --> Dashboard
+    Dashboard -- "Triggers file download" --> Actor

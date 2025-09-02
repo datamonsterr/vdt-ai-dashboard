@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Kafka
+    participant EventProcessor as kafka_consumer_components.EventProcessor
+    participant DataAggregator as kafka_consumer_components.DataAggregator
+    participant AlertEvaluator as kafka_consumer_components.AlertEvaluator
+    participant DB as SQL Database
+    participant NotificationService as kafka_consumer_components.NotificationService
+
+    Kafka->>+EventProcessor: delivers MonitoringEvent message
+    
+    EventProcessor->>DataAggregator: aggregate(event)
+    DataAggregator->>DB: INSERT INTO aggregated_metrics
+    DB-->>DataAggregator: ack
+    DataAggregator-->>EventProcessor: return
+    
+    EventProcessor->>AlertEvaluator: evaluate(event)
+    AlertEvaluator->>DB: SELECT * FROM alert_rules WHERE status='ACTIVE'
+    DB-->>AlertEvaluator: returns activeRules
+    
+    alt Alert Condition is Met
+        AlertEvaluator->>NotificationService: sendAlert(rule, event)
+    end
+    
+    AlertEvaluator-->>EventProcessor: return
+    deactivate EventProcessor

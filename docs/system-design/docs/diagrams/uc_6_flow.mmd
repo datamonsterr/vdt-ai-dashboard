@@ -1,0 +1,22 @@
+graph TD
+    Actor[User]
+    DB[(SQL Database)]
+
+    subgraph api_server
+        DashboardController[Dashboard Controller]
+        DashboardService[Dashboard Service]
+        MetricsRepo[Repository Layer]
+    end
+
+    Dashboard[UI Dashboard]
+
+    Actor -- "Applies filters in UI" --> Dashboard
+    Dashboard -- "Sends GET Request with filters" --> DashboardController
+    DashboardController -- "Calls service to fetch data" --> DashboardService
+    DashboardService -- "Uses repository to query data" --> MetricsRepo
+    MetricsRepo -- "SELECTs from aggregated_metrics table" --> DB
+    DB -- "Returns aggregated data" --> MetricsRepo
+    MetricsRepo -- "Returns data" --> DashboardService
+    DashboardService -- "Returns formatted JSON" --> DashboardController
+    DashboardController -- "Sends 200 OK Response" --> Dashboard
+    Dashboard -- "Re-renders charts" --> Actor

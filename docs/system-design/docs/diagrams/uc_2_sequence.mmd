@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor OA as OrganizationAdmin
+    participant UI as Dashboard
+    participant ProjAccessController as api_server_controllers.ProjectController
+    participant ProjectService as api_server_services.ProjectService
+    participant ProjMemberRepo as SQL Database
+    participant AuditService as api_server_services.AuditService
+
+    OA->>+UI: Selects a user, assigns a role, and clicks 'Add Member'
+
+    UI->>+ProjAccessController: POST /api/projects/{id}/members (userId, role)
+
+    ProjAccessController->>ProjectService: addMemberToProject(projectId, userId, role)
+    ProjectService->>ProjMemberRepo: create(ProjectMember entity)
+    ProjMemberRepo-->>ProjectService: returns new entity
+    ProjectService->>AuditService: logAction(user, 'ADD_PROJECT_MEMBER', {projectId, userId})
+    AuditService-->>ProjectService: ack
+    ProjectService-->>ProjAccessController: returns success status
+    
+    ProjAccessController-->>-UI: 201 Created
+    UI-->>-OA: Refreshes member list with the new user

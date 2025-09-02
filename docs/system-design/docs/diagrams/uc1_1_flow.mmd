@@ -1,0 +1,28 @@
+graph TD
+    %% Define participants
+    Admin[Organization Admin]
+    DB[(SQL Database)]
+
+    %% Define the main server component as a subgraph
+    subgraph api_server
+        Controller[Project Controller]
+        Service[Project Service]
+        Repo[Repository Layer]
+    end
+
+    %% Define the user's client
+    Dashboard[UI Dashboard]
+
+    %% --- Define the Request Flow ---
+    Admin -- "Modifies project details in UI" --> Dashboard
+    Dashboard -- "Sends PUT Request" --> Controller
+    Controller -- "Calls service to handle business logic" --> Service
+    Service -- "Uses repository to interact with data" --> Repo
+    Repo -- "Reads existing project & writes update" --> DB
+
+    %% --- Define the Response Flow ---
+    DB -- "Confirms write operation" --> Repo
+    Repo -- "Returns updated data" --> Service
+    Service -- "Returns success DTO" --> Controller
+    Controller -- "Sends 200 OK Response" --> Dashboard
+    Dashboard -- "Update Successful" message --> Admin

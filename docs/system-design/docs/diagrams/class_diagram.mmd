@@ -1,0 +1,109 @@
+classDiagram
+    direction TD
+
+    %% API Server Core Models
+    class User {
+        +String userId
+        +String email
+        +String name
+        +login(email, password) boolean
+        +logout() void
+    }
+    class Organization {
+        +String organizationId
+        +String name
+        +inviteMember(email, role) Invitation
+        +createProject(name, desc) Project
+    }
+    class Project {
+        +String projectId
+        +String name
+        +addMember(userId, role) boolean
+        +createApiKey(name) APIKey
+        +proposeAlertRule() AlertRule
+    }
+    class APIKey {
+        +String keyId
+        +String keyName
+        +String keyValueHash
+        +revoke() boolean
+    }
+    class AlertRule {
+        +String ruleId
+        +String metricType
+        +String condition
+        +approve(approver) boolean
+        +reject(rejecter) boolean
+    }
+    class MonitoringEvent {
+        <<Message>>
+        +String eventId
+        +EventType eventType
+        +Date timestamp
+        +String modelVersion
+        +JSON payload
+    }
+    class AuditLogEntry {
+        +String logId
+        +Date timestamp
+        +String action
+    }
+
+    %% API Server Controllers
+    class EventController {
+        +handleEventPush(req) Response
+    }
+    class ProjectController {
+        +createProject(req) Response
+        +addMember(req) Response
+    }
+
+    %% API Server Services
+    class EventProducerService {
+        -KafkaProducer producer
+        +publishEvent(event) error
+    }
+    class AuthService {
+        +validateApiKey(key) boolean
+    }
+    class ReportService {
+        +generateReport(filters) File
+    }
+
+    %% Kafka Consumer Components
+    class EventProcessor {
+        -KafkaConsumer consumer
+        +run() void
+        +processMessage(msg) void
+    }
+    class DataAggregator {
+        +aggregate(event) AggregatedMetric
+    }
+    class AlertEvaluator {
+        -AlertRuleRepository alertRuleRepo
+        +evaluate(event) void
+    }
+    class AggregatedMetric {
+        <<DataStore>>
+        +String metricId
+        +String projectId
+        +String metricType
+        +Float value
+        +Date timestamp
+    }
+    class NotificationService {
+         +sendAlert(rule, event) void
+    }
+
+    %% Relationships
+    EventController --> AuthService
+    EventController --> EventProducerService
+    EventProducerService --> MonitoringEvent : produces
+
+    EventProcessor --> DataAggregator
+    EventProcessor --> AlertEvaluator
+    DataAggregator --> AggregatedMetric : creates
+    AlertEvaluator --> NotificationService : triggers
+
+    %% Cross-Server Interaction via Kafka
+    EventProcessor ..> MonitoringEvent : consumes

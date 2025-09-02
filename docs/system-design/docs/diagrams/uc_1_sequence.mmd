@@ -1,0 +1,24 @@
+sequenceDiagram
+    actor OA as OrganizationAdmin
+    participant UI as Dashboard
+    participant ProjectController as api_server_controllers.ProjectController
+    participant ProjectService as api_server_services.ProjectService
+    participant ProjectRepo as SQL Database
+    participant AuditService as api_server_services.AuditService
+
+    OA->>+UI: Modifies project name and clicks 'Save'
+    
+    UI->>+ProjectController: PUT /api/projects/{projectId} (updateData)
+    
+    ProjectController->>ProjectService: updateProject(projectId, updateData)
+    ProjectService->>ProjectRepo: findById(projectId)
+    ProjectRepo-->>ProjectService: returns projectEntity
+    ProjectService->>ProjectService: Validates data and updates entity fields
+    ProjectService->>ProjectRepo: save(updatedProjectEntity)
+    ProjectRepo-->>ProjectService: returns savedEntity
+    ProjectService->>AuditService: logAction(user, 'UPDATE_PROJECT', projectId)
+    AuditService-->>ProjectService: ack
+    ProjectService-->>ProjectController: returns updatedProject DTO
+
+    ProjectController-->>-UI: 200 OK (project DTO)
+    UI-->>-OA: Displays "Project Updated" success message
